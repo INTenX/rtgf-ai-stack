@@ -134,16 +134,57 @@ ls -lh "$CTX_ROOT/ctx/flows/promoted/"
 
 ### Search Sessions
 
+**Use `ctx-search` for full-text + filter search across all knowledge repos:**
+
 ```bash
-# Search by tags (future: ctx-search)
-grep -r "tags:.*openclaw" "$CTX_ROOT/ctx/archive/canonical/"
+CTX_SEARCH="node ~/rtgf-ai-stack/chronicle/tools/cli/ctx-search.js"
 
-# Search by date
-find "$CTX_ROOT/ctx/archive/canonical/2026/02/" -name "*.yaml"
+# Full-text search (title + tags + message content)
+$CTX_SEARCH "librechat docker restart"
+$CTX_SEARCH "ollama embedding models"
 
-# Search by content
-grep -r "RTGF framework" "$CTX_ROOT/ctx/archive/canonical/"
+# Filter by flow state
+$CTX_SEARCH --state codified
+$CTX_SEARCH "security" --state validated
+
+# Filter by tags
+$CTX_SEARCH --tags "docker,security"
+$CTX_SEARCH "restart policy" --tags "docker"
+
+# Filter by date range
+$CTX_SEARCH --since 2026-02-01 --until 2026-02-28
+
+# Show content snippets (useful for picking the right session to read)
+$CTX_SEARCH "circuit designer" --show-content
+
+# Most recent N sessions
+$CTX_SEARCH --recent 10
+
+# Machine-readable output
+$CTX_SEARCH "ollama" --format list
+$CTX_SEARCH "docker" --format json
+
+# Force rebuild index (after new sessions imported)
+$CTX_SEARCH --rebuild
+
+# Search via MeiliSearch (requires CHRONICLE_MEILI_KEY env var)
+export CHRONICLE_MEILI_KEY=<key-from-ubuntu-ai-hub>
+$CTX_SEARCH "librechat" --source meili
+
+# Index sessions into MeiliSearch (run once, then keep updated with --rebuild)
+$CTX_SEARCH --push-meili
 ```
+
+**Getting the MeiliSearch key** (on Ubuntu-AI-Hub):
+```bash
+docker inspect chat-meilisearch | python3 -c "
+import sys,json; d=json.load(sys.stdin)
+for e in d[0]['Config']['Env']:
+    if 'MEILI' in e: print(e)
+"
+```
+
+**Index cache location:** `~/.chronicle-fts.json` — rebuilt automatically when stale (>24h) or with `--rebuild`.
 
 ### Read Session
 

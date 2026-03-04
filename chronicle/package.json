@@ -7,6 +7,7 @@
   "bin": {
     "ctx-import": "./tools/cli/rcm-import.js",
     "ctx-export": "./tools/cli/rcm-export.js",
+    "ctx-search": "./tools/cli/ctx-search.js",
     "rcm-import": "./tools/cli/rcm-import.js",
     "rcm-export": "./tools/cli/rcm-export.js"
   },
@@ -30,6 +31,7 @@
   "author": "Makanui LLC",
   "license": "Apache-2.0",
   "dependencies": {
+    "better-sqlite3": "^12.6.2",
     "blessed": "^0.1.81",
     "blessed-contrib": "^4.11.0",
     "chokidar": "^3.6.0",
@@ -37,6 +39,8 @@
     "fast-glob": "^3.3.3",
     "gray-matter": "^4.0.3",
     "js-yaml": "^4.1.1",
+    "meilisearch": "^0.55.0",
+    "minisearch": "^7.2.0",
     "uuid": "^10.0.0"
   },
   "devDependencies": {
