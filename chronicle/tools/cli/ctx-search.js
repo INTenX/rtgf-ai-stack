@@ -89,6 +89,12 @@ function extractContent(markdownBody) {
   return markdownBody
     .replace(/^##\s+(User|Assistant|System)\s*·.*$/gm, '')
     .replace(/^\*\*Tools:\*\*.*$/gm, '')
+    // Strip code fences (tool output, JSON payloads, shell output — injection risk)
+    .replace(/```[\s\S]*?```/g, '')
+    // Strip inline code spans
+    .replace(/`[^`\n]{0,200}`/g, '')
+    // Strip HTML-style tags that could contain adversarial instructions
+    .replace(/<[^>]{0,200}>/g, '')
     .replace(/^---+\s*$/gm, '')
     .replace(/\n{3,}/g, '\n\n')
     .trim()
