@@ -8,7 +8,7 @@ const TelegramBot = require('node-telegram-bot-api')
 const cron = require('node-cron')
 const { loadConfig, chatConfig, isAdmin, modelForCommand } = require('./lib/config')
 const { ask, listModels, spendSummary } = require('./lib/gateway')
-const { searchLore } = require('./lib/chronicle')
+const { searchLore, getContextForPrompt } = require('./lib/chronicle')
 const { wslAudit, pullModel, ollamaModels, loreImport } = require('./lib/tools')
 
 // ─── History persistence ──────────────────────────────────────────────────────
@@ -185,7 +185,9 @@ async function handleAsk(msg, prompt, model) {
   await bot.sendChatAction(chatId, 'typing')
   try {
     const state = getState(chatId)
-    const response = await ask(chatId, model, prompt, { history: state.history })
+    // Run ctx-search concurrently with nothing else pending — adds ~1s, negligible vs LLM latency
+    const systemPrompt = await getContextForPrompt(prompt)
+    const response = await ask(chatId, model, prompt, { history: state.history, systemPrompt })
     appendAndPersist(chatId, prompt, response)
     await send(chatId, response)
   } catch (err) {
@@ -269,7 +271,7 @@ bot.onText(/\/chronicle(?:\s+(.+))?/, async (msg, match) => {
     return
   }
   await bot.sendChatAction(chatId, 'typing')
-  const results = searchLore(query)
+  const results = await searchLore(query)
   if (!results) {
     await send(chatId, `No CHRONICLE sessions found matching: ${query}`)
     return
