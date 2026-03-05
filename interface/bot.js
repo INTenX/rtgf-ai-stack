@@ -149,7 +149,7 @@ bot.onText(/\/whoami/, async (msg) => {
 
 // ── Model switching ────────────────────────────────────────────────────────────
 
-bot.onText(/\/model(?:\s+(.+))?/, async (msg, match) => {
+bot.onText(/\/model(?!\w)(?:\s+(.+))?/, async (msg, match) => {
   const chatId = msg.chat.id
   const state = getState(chatId)
   const requested = match[1]?.trim()
