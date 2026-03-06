@@ -1,10 +1,10 @@
 # Telegram Interface
 
-**Status:** ✅ Running (systemd service)
+**Status:** ✅ Running on AI Hub WSL (systemd service, linger enabled)
 **Location:** `interface/bot.js`
 **Service:** `systemctl --user status rtgf-interface`
 
-Telegram bot providing mobile/async access to the AI stack with conversation history and CHRONICLE context injection.
+Telegram bot providing mobile/async access to the AI stack with conversation history and CHRONICLE context injection. Runs on AI Hub WSL alongside the LiteLLM gateway — gateway calls are localhost, no cross-WSL networking needed.
 
 ## Message Flow
 
@@ -77,6 +77,9 @@ The injected prefix is clearly labeled as reference data, not instructions.
 
 ## Systemd Service
 
+!!! note "Node.js path"
+    Use the full nvm path in `ExecStart` — systemd services don't inherit the user's shell PATH and won't find `node` via nvm activation. Set `Environment=PATH=...` to include `~/.local/bin` for `wsl-audit` and `ctx-search`.
+
 ```ini
 # ~/.config/systemd/user/rtgf-interface.service
 [Unit]
@@ -87,6 +90,7 @@ After=network.target
 WorkingDirectory=/home/<user>/rtgf-ai-stack/interface
 ExecStart=/home/<user>/.nvm/versions/node/v22.x.x/bin/node bot.js
 EnvironmentFile=/home/<user>/rtgf-ai-stack/interface/.env
+Environment=PATH=/home/<user>/.local/bin:/usr/local/bin:/usr/bin:/bin
 Restart=on-failure
 RestartSec=10
 
@@ -95,14 +99,18 @@ WantedBy=default.target
 ```
 
 ```bash
+# First-time: enable systemd in WSL (requires restart)
+echo -e '[boot]\nsystemd=true' | sudo tee -a /etc/wsl.conf
+# (restart WSL instance from Windows: wsl --terminate <instance>)
+
 # Enable and start
 systemctl --user enable --now rtgf-interface
 
+# Persist without active login session
+loginctl enable-linger $USER
+
 # View logs
 journalctl --user -u rtgf-interface -f
-
-# Enable persistence without active session
-loginctl enable-linger $USER
 ```
 
 ## Multi-Client Config

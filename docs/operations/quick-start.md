@@ -38,24 +38,42 @@ docker compose -f compose/gateway.yml up -d
 
 Verify: `curl http://localhost:4000/health`
 
-## 3. Start Telegram Bot (Dev WSL)
+## 3. Start Telegram Bot (AI Hub WSL)
+
+Run the bot on the same WSL instance as the gateway — `GATEWAY_URL=http://localhost:4000`, no cross-WSL routing needed.
 
 ```bash
-cd ~/rtgf-ai-stack/interface
-# Fill in secrets
-cp .env.example .env
-# Edit .env with TELEGRAM_TOKEN, GATEWAY_URL, etc.
+# Node.js via nvm — install if not present
+curl -o /tmp/nvm-install.sh https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh
+bash /tmp/nvm-install.sh
+bash -i -c 'nvm install 22'
 
-# Enable as systemd service
+# Symlink node/npm for systemd (doesn't inherit nvm)
+ln -sf ~/.nvm/versions/node/v22.*/bin/node ~/.local/bin/node
+ln -sf ~/.nvm/versions/node/v22.*/bin/npm ~/.local/bin/npm
+
+# Install bot + chronicle dependencies
+cd ~/rtgf-ai-stack/interface && npm install
+cd ~/rtgf-ai-stack/chronicle && npm install
+
+# Clone knowledge repos for CHRONICLE context injection
+for repo in intenx-knowledge sensit-knowledge makanui-knowledge ratio11-knowledge beaglebone-knowledge test-knowledge; do
+  git clone --depth 1 https://github.com/INTenX/$repo.git ~/$repo
+done
+
+# Fill in secrets
+cp .env.example interface/.env
+# Edit interface/.env: TELEGRAM_TOKEN, GATEWAY_URL=http://localhost:4000, LITELLM_MASTER_KEY, ADMIN_CHAT_ID
+
+# Enable systemd (if not already — requires WSL restart)
+echo -e '[boot]\nsystemd=true' | sudo tee -a /etc/wsl.conf
+
+# Enable and start service
 systemctl --user enable --now rtgf-interface
+loginctl enable-linger $USER
 
 # Check it's running
 journalctl --user -u rtgf-interface -f
-```
-
-Enable persistence without active login session:
-```bash
-loginctl enable-linger $USER
 ```
 
 ## 4. Activate WARD Hooks

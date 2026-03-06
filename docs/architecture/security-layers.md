@@ -12,8 +12,9 @@ graph TB
         WA["wsl-audit\nPlatform health\nDocker restart detection\nEvent log"]
     end
 
-    subgraph P3["Phase 3 — Partial"]
+    subgraph P3["Phase 3 — Active"]
         GK["Gateway Keys\nLiteLLM virtual keys\nPer-client budget enforcement\nSpend visibility"]
+        TG["Telegram WARD Alerts\nBlock notification\nPhone alert on CRITICAL"]
     end
 
     subgraph P4["Phase 4 — Planned"]
@@ -38,7 +39,8 @@ graph TB
     GK -->|"within budget"| ROUTE["Route to model"]
 
     style P2 fill:#1b5e20,color:#fff
-    style P3 fill:#1a237e,color:#fff
+    TG --> BLOCK
+    style P3 fill:#1b5e20,color:#fff
     style P4 fill:#4a148c,color:#fff
     style P5 fill:#311b92,color:#fff
     style P6 fill:#212121,color:#fff
@@ -107,6 +109,7 @@ timeline
              : wsl-audit events (active)
     Phase 3  : LiteLLM virtual keys (active)
              : Per-client budget limits (active)
+             : WARD Telegram alerts (active)
     Phase 4  : Telegram gate (planned)
              : Admin escalation flow
     Phase 5  : Cedar policy engine (planned)
