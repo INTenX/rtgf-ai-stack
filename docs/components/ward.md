@@ -1,6 +1,6 @@
 # WARD — Claude Code Security Hooks
 
-**Status:** ✅ Built (run `install-hooks.sh` to activate)
+**Status:** ✅ Active — INTenXDev + Ubuntu-AI-Hub
 **Location:** `hooks/`
 **Formerly:** SENTINEL
 
@@ -41,19 +41,42 @@ flowchart TD
 ## Installation
 
 ```bash
+# Run on each WSL instance
 bash ~/rtgf-ai-stack/hooks/install-hooks.sh
+
+# Fill in Telegram credentials
+nano ~/.claude/hooks/ward.env
+# TELEGRAM_TOKEN=<bot-token>
+# TELEGRAM_CHAT_ID=<admin-chat-id>
 ```
 
-This copies hooks to `~/.claude/hooks/` and creates the `ward.env` config file.
+Hooks fire immediately on the next Claude Code session — no restart needed.
 
-## Configuration
+## Deployed Instances
 
-```bash
-# ~/.claude/hooks/ward.env
-TELEGRAM_TOKEN=<your-bot-token>
-TELEGRAM_CHAT_ID=<your-admin-chat-id>
-AUDIT_LOG_DIR=~/.claude/audit
+| WSL Instance | Hooks | Telegram | `permissions.deny` |
+|-------------|-------|----------|-------------------|
+| INTenXDev | ✅ Active | ✅ Wired | ✅ 21 rules |
+| Ubuntu-AI-Hub | ✅ Installed | ✅ Wired | ✅ 21 rules |
+
+## Audit Digest
+
+The bot sends a daily WARD security digest at **7:05am** alongside the platform health report.
+
 ```
+*WARD Audit — 2026-03-05*
+Tool calls: 403
+🚫 Blocked: 1
+  • curl-pipe-shell: 1
+```
+
+On-demand via Telegram:
+```
+/ward              — yesterday's digest
+/ward 2026-03-04   — specific date
+```
+
+The `/ward` command is admin-only.
 
 ## Block Policy Format
 
