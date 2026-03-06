@@ -38,14 +38,25 @@ sequenceDiagram
 
 ## Model Aliases
 
-| Alias | Primary Backend | Fallback |
-|-------|----------------|---------|
-| `local-general` | `ollama/llama3.1:8b` | `claude-haiku-4-5` |
-| `local-coding` | `ollama/qwen2.5-coder:14b` | `claude-sonnet-4-6` |
-| `local-reason` | `ollama/deepseek-r1:14b` | `claude-sonnet-4-6` |
-| `local-fast` | `ollama/llama3.2:3b` | `claude-haiku-4-5` |
-| `local-compact` | `ollama/phi4-mini` | `claude-haiku-4-5` |
-| `local-coding-fast` | `ollama/deepseek-coder-v2:lite` | `claude-sonnet-4-6` |
+**Local (Ollama):**
+
+| Alias | Backend |
+|-------|---------|
+| `local-general` | `ollama/llama3.1:8b` |
+| `local-coding` | `ollama/qwen2.5-coder:14b` |
+| `local-reasoning` | `ollama/deepseek-r1:14b` |
+| `local-fast` | `ollama/llama3.2:3b` |
+| `local-compact` | `ollama/phi4-mini` |
+| `local-coding-fast` | `ollama/qwen2.5-coder:7b` |
+
+**Cloud (Anthropic):**
+
+| Alias | Backend | Required env |
+|-------|---------|-------------|
+| `claude-sonnet` | `anthropic/claude-sonnet-4-6` | `ANTHROPIC_API_KEY` |
+| `claude-haiku` | `anthropic/claude-haiku-4-5-20251001` | `ANTHROPIC_API_KEY` |
+
+Cloud models are enabled by adding `ANTHROPIC_API_KEY` to `gateway/.env` and restarting the gateway.
 
 ## Client Key Setup
 
