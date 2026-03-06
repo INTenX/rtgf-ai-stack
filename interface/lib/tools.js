@@ -11,7 +11,11 @@ function wslAudit(subcommand = 'risks') {
     return execSync(`wsl-audit ${subcommand}`, {
       encoding: 'utf8',
       timeout: 30000,
-      env: { ...process.env, TERM: 'dumb' }  // suppress ANSI colors
+      env: {
+        ...process.env,
+        TERM: 'dumb',  // suppress ANSI colors
+        PATH: `${process.env.HOME}/.local/bin:${process.env.PATH || '/usr/local/bin:/usr/bin:/bin'}`
+      }
     })
   } catch (err) {
     // wsl-audit exits non-zero when warnings found — capture output anyway
