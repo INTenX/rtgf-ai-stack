@@ -9,7 +9,7 @@ const cron = require('node-cron')
 const { loadConfig, chatConfig, isAdmin, modelForCommand } = require('./lib/config')
 const { ask, listModels, spendSummary } = require('./lib/gateway')
 const { searchLore, getContextForPrompt } = require('./lib/chronicle')
-const { wslAudit, pullModel, ollamaModels, loreImport, wardDigest } = require('./lib/tools')
+const { wslAudit, pullModel, ollamaModels, loreImport, wardDigest, batonList, batonDrop, batonShow } = require('./lib/tools')
 const { dispatchTask, AGENT_TYPES } = require('./lib/dispatcher')
 
 // ─── History persistence ──────────────────────────────────────────────────────
@@ -135,6 +135,7 @@ Client: ${cfg?.client ?? 'personal'} | Model: \`${model}\`
 /models — Available models
 /chronicle <query> — Search CHRONICLE session archive
 /dispatch <type> <goal> — Run a focused agent task (research/code/write/analyze)
+/baton [list|drop|show] — Inter-session task coordination
 
 *Settings:*
 /model <name> — Switch active model for this chat
@@ -301,6 +302,45 @@ bot.onText(/\/chronicle(?:\s+(.+))?/, async (msg, match) => {
     return
   }
   await send(chatId, `*CHRONICLE sessions matching "${query}":*\n${results}`)
+})
+
+// ── BATON ─────────────────────────────────────────────────────────────────────
+
+bot.onText(/\/baton(?:\s+(.+))?/s, async (msg, match) => {
+  const chatId = msg.chat.id
+  const input = match[1]?.trim()
+
+  if (!input || input === 'list') {
+    const output = batonList(false)
+    await send(chatId, `*Pending batons:*\n${output}`)
+    return
+  }
+
+  if (input === 'all') {
+    const output = batonList(true)
+    await send(chatId, `*All batons:*\n${output}`)
+    return
+  }
+
+  if (input.startsWith('show ')) {
+    const id = input.slice(5).trim()
+    await send(chatId, batonShow(id))
+    return
+  }
+
+  if (input.startsWith('drop ')) {
+    const subject = input.slice(5).trim()
+    if (!subject) { await send(chatId, 'Usage: /baton drop <subject>'); return }
+    const id = batonDrop(subject)
+    await send(chatId, `Baton dropped: \`${id}\`\n_${subject}_`)
+    return
+  }
+
+  await send(chatId, `*BATON commands:*
+/baton list — pending batons
+/baton all — all batons
+/baton drop <subject> — drop a new task baton
+/baton show <id> — full detail`)
 })
 
 // ── Agent dispatch ────────────────────────────────────────────────────────────
