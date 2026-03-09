@@ -199,4 +199,40 @@ function batonShow(idPrefix) {
   return `No baton matching: ${idPrefix}`
 }
 
-module.exports = { wslAudit, pullModel, ollamaModels, loreImport, wardDigest, batonList, batonDrop, batonShow }
+// Drop a relay baton — targets a named session for tmux injection
+function batonDropRelay(targetSession, message) {
+  const fs = require('fs')
+  const { randomUUID } = require('crypto')
+  const dir = `${BATON_STORE}/pending`
+  fs.mkdirSync(dir, { recursive: true })
+  const baton = {
+    id: randomUUID(),
+    created: new Date().toISOString(),
+    from: 'user (telegram)',
+    to: targetSession,
+    type: 'relay',
+    priority: 'high',
+    subject: `Relay → ${targetSession}`,
+    body: message,
+    context: { chronicle_refs: [], inline: '' },
+    status: 'pending',
+    claimed_at: null, claimed_by: null, completed_at: null, result: null,
+  }
+  fs.writeFileSync(`${dir}/${baton.id}.json`, JSON.stringify(baton, null, 2))
+  return baton.id
+}
+
+// Check whether a relay baton has a completed result (null if not yet)
+function batonCheckResult(id) {
+  const fs = require('fs')
+  const completedDir = `${BATON_STORE}/completed`
+  if (!fs.existsSync(completedDir)) return null
+  const file = fs.readdirSync(completedDir).find(f => f.startsWith(id))
+  if (!file) return null
+  try {
+    const b = JSON.parse(fs.readFileSync(`${completedDir}/${file}`, 'utf8'))
+    return b.result ?? ''
+  } catch { return null }
+}
+
+module.exports = { wslAudit, pullModel, ollamaModels, loreImport, wardDigest, batonList, batonDrop, batonShow, batonDropRelay, batonCheckResult }

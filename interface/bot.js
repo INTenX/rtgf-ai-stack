@@ -9,7 +9,7 @@ const cron = require('node-cron')
 const { loadConfig, chatConfig, isAdmin, modelForCommand } = require('./lib/config')
 const { ask, listModels, spendSummary } = require('./lib/gateway')
 const { searchLore, getContextForPrompt } = require('./lib/chronicle')
-const { wslAudit, pullModel, ollamaModels, loreImport, wardDigest, batonList, batonDrop, batonShow } = require('./lib/tools')
+const { wslAudit, pullModel, ollamaModels, loreImport, wardDigest, batonList, batonDrop, batonShow, batonDropRelay, batonCheckResult } = require('./lib/tools')
 const { dispatchTask, AGENT_TYPES } = require('./lib/dispatcher')
 
 // ─── History persistence ──────────────────────────────────────────────────────
@@ -135,6 +135,7 @@ Client: ${cfg?.client ?? 'personal'} | Model: \`${model}\`
 /models — Available models
 /chronicle <query> — Search CHRONICLE session archive
 /dispatch <type> <goal> — Run a focused agent task (research/code/write/analyze)
+/relay <session> <message> — Inject message into a named running session
 /baton [list|drop|show] — Inter-session task coordination
 
 *Settings:*
@@ -341,6 +342,41 @@ bot.onText(/\/baton(?:\s+(.+))?/s, async (msg, match) => {
 /baton all — all batons
 /baton drop <subject> — drop a new task baton
 /baton show <id> — full detail`)
+})
+
+// ── Relay — inject message into a named running session via BATON ─────────────
+
+bot.onText(/\/relay(?:\s+(\S+)(?:\s+(.+))?)?/s, async (msg, match) => {
+  const chatId = msg.chat.id
+  if (!isAdmin(chatId)) { await send(chatId, 'Admin only.'); return }
+
+  const sessionName = match[1]?.trim()
+  const message = match[2]?.trim()
+
+  if (!sessionName || !message) {
+    await send(chatId, `Usage: /relay <session-name> <message>\n\nExample:\n/relay "AI Stack" what's the current task?`)
+    return
+  }
+
+  const id = batonDropRelay(sessionName, message)
+  const short = id.slice(0, 8)
+  await send(chatId, `Relay dropped → \`${short}\`\nTarget: *${sessionName}*\n\nWaiting for response (up to 5min)…`)
+
+  // Poll completed/ for the result — non-blocking, runs in background
+  const TIMEOUT = 5 * 60 * 1000
+  const INTERVAL = 10 * 1000
+  const deadline = Date.now() + TIMEOUT
+  const poll = setInterval(async () => {
+    const result = batonCheckResult(short)
+    if (result !== null) {
+      clearInterval(poll)
+      const trimmed = result.slice(-3000)  // cap at 3000 chars for Telegram
+      await send(chatId, `*Relay response from ${sessionName}:*\n\n${trimmed}`)
+    } else if (Date.now() > deadline) {
+      clearInterval(poll)
+      await send(chatId, `No response from *${sessionName}* within 5 minutes.\nCheck with: /baton show ${short}`)
+    }
+  }, INTERVAL)
 })
 
 // ── Agent dispatch ────────────────────────────────────────────────────────────
