@@ -30,3 +30,6 @@ build/
 site/
 interface/.env
 interface/.chat-history.json
+
+# Codex hook logs
+hooks/codex/logs/
