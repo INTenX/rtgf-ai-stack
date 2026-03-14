@@ -81,7 +81,11 @@ graph TB
 | **WARD** (Claude Code hooks) | ✅ Built | `hooks/` |
 | **wsl-audit** | ✅ Built | `~/.local/bin/wsl-audit` |
 | **LibreChat** | ✅ Keep + decouple | AI Hub WSL `:3080` |
-| **BATON** (inter-session) | ⬜ Planned | `baton/` |
+| **BATON** (inter-session) | 🔄 Phase 2 — CLI built | `baton/` |
+| **Intent Classifier** | ✅ Deployed | `interface/lib/intent.js` |
+| **LanceDB semantic search** | ✅ Built | `chronicle/tools/cli/lancedb-index.js` |
+| **Wrap signal detector** | ✅ Cron | `scripts/wrap-signal-detector` |
+| **Auto-prune hypothesis** | ✅ Cron | `chronicle/tools/cli/prune-hypothesis.js` |
 
 ---
 

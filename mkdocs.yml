@@ -71,7 +71,10 @@ nav:
     - Telegram Interface: components/interface.md
     - WARD (Hooks): components/ward.md
     - wsl-audit: components/wsl-audit.md
-    - BATON (Planned): components/baton.md
+    - BATON: components/baton.md
+  - Protocols:
+    - BATON Protocol: baton-prd.md
+    - Messaging PRD: messaging-prd.md
   - Operations:
     - Quick Start: operations/quick-start.md
     - Service Management: operations/services.md
@@ -79,3 +82,7 @@ nav:
   - Development:
     - Roadmap: development/roadmap.md
     - Knowledge Flow: development/knowledge-flow.md
+    - Strategy: STRATEGY.md
+    - Scaling Evolution: architecture/scaling-evolution.md
+  - Security:
+    - AI Stack Security: security/AI-STACK-SECURITY.md
