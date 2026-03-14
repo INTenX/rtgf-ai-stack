@@ -11,6 +11,7 @@ const { ask, listModels, spendSummary } = require('./lib/gateway')
 const { searchLore, getContextForPrompt } = require('./lib/chronicle')
 const { wslAudit, pullModel, ollamaModels, loreImport, wardDigest, batonList, batonDrop, batonShow, batonDropRelay, batonCheckResult } = require('./lib/tools')
 const { dispatchTask, AGENT_TYPES } = require('./lib/dispatcher')
+const { classify: classifyIntent } = require('./lib/intent')
 
 // ─── History persistence ──────────────────────────────────────────────────────
 
@@ -43,6 +44,16 @@ if (!TOKEN) {
 
 const config = loadConfig()
 const bot = new TelegramBot(TOKEN, { polling: true })
+
+// Resolve Ollama host for intent classifier (same logic as ollama-setup.sh)
+const { execSync } = require('child_process')
+let OLLAMA_HOST_URL = process.env.OLLAMA_HOST || null
+if (!OLLAMA_HOST_URL) {
+  try {
+    const gwIp = execSync("ip route show default | awk '{print $3}'", { encoding: 'utf8' }).trim()
+    OLLAMA_HOST_URL = `http://${gwIp}:11434`
+  } catch { /* leave null — classifier will use rule-based only */ }
+}
 
 // Per-chat runtime state (model overrides, conversation history)
 const chatState = {}
@@ -226,7 +237,7 @@ bot.onText(/\/claude(?:fast)?(?:\s+(.+))?/s, async (msg, match) => {
   await handleAsk(msg, match[1]?.trim(), modelForCommand(modelKey))
 })
 
-// Non-command messages in private chats → route to active model
+// Non-command messages in private chats → classify intent, route to best model
 bot.on('message', async (msg) => {
   if (msg.text?.startsWith('/')) return
   if (msg.chat.type !== 'private') return  // groups: require explicit command
@@ -235,7 +246,17 @@ bot.on('message', async (msg) => {
   await bot.sendChatAction(chatId, 'typing')
   try {
     const state = getState(chatId)
-    const response = await ask(chatId, activeModel(chatId), msg.text, { history: state.history })
+
+    // Classify intent and pick model — use rule-based path (fast), try LLM if Ollama available
+    const classification = await classifyIntent(msg.text, {
+      ollamaHost: OLLAMA_HOST_URL,
+      useLlm: true,
+      fallback: 'general',
+    })
+    const model = activeModel(chatId, modelForCommand(classification.model_key))
+    console.log(`[intent] "${msg.text.slice(0,60)}" → ${classification.intent} (${classification.method}) → ${model}`)
+
+    const response = await ask(chatId, model, msg.text, { history: state.history })
     appendAndPersist(chatId, msg.text, response)
     await send(chatId, response)
   } catch (err) {

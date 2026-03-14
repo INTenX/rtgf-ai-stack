@@ -73,3 +73,20 @@ scheduled:
   #   chat_id: default
   #   command: spend
   #   label: "Weekly spend summary"
+
+# ── Intent Classifier ─────────────────────────────────────────────────────────
+# Routes freeform messages to the appropriate model tier.
+# Classifier uses rule-based fast path first; LLM classifier via Ollama for ambiguous inputs.
+intent_classifier:
+  enabled: true
+  llm_model: phi4-mini          # Ollama model for LLM classification (falls back to rules-only if unavailable)
+  fallback_intent: general      # Default if classification fails
+  log: true                     # Log classification decisions to console
+
+  # Intent → model key mapping (model keys defined in 'models' section above)
+  routing:
+    status:  fast
+    general: ask
+    coding:  code
+    reason:  reason
+    complex: claude
