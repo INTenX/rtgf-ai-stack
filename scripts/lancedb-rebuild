@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# lancedb-rebuild — nightly rebuild of the CHRONICLE LanceDB semantic index
+#
+# Run via cron:
+#   0 3 * * * /home/cbasta/rtgf-ai-stack/scripts/lancedb-rebuild >> ~/.chronicle-lancedb/rebuild.log 2>&1
+#
+# Uses nvm node if available (required on Ubuntu-AI-Hub where node is via nvm).
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(dirname "$SCRIPT_DIR")"
+INDEX_SCRIPT="${REPO_ROOT}/chronicle/tools/cli/lancedb-index.js"
+LOG_DIR="${HOME}/.chronicle-lancedb"
+LOG_FILE="${LOG_DIR}/rebuild.log"
+
+mkdir -p "$LOG_DIR"
+
+TS="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+echo "=== LanceDB rebuild started: ${TS} ==="
+
+# Resolve node — prefer nvm shim
+NODE=""
+if [[ -f "${HOME}/.local/bin/node" ]]; then
+  NODE="${HOME}/.local/bin/node"
+elif command -v node &>/dev/null; then
+  NODE="$(command -v node)"
+else
+  echo "ERROR: node not found" >&2
+  exit 1
+fi
+
+echo "Node: $($NODE --version)"
+echo "Index script: ${INDEX_SCRIPT}"
+
+# Rebuild all sessions (incremental — skips already-indexed)
+"$NODE" "$INDEX_SCRIPT" --all
+
+TS_END="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+echo "=== LanceDB rebuild complete: ${TS_END} ==="

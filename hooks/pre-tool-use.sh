@@ -119,10 +119,29 @@ if block_reason is None and tool_name in ("Read", "Write", "Edit", "Glob", "Note
             except re.error:
                 pass
 
-# ── Build compact input summary (truncate large values) ───────────────────────
+# ── Secret redaction patterns ────────────────────────────────────────────────
+_REDACT_PATTERNS = [
+    (re.compile(r'sk-ant-[A-Za-z0-9\-_]{20,}'),           '[REDACTED:anthropic-key]'),
+    (re.compile(r'\bsk-[A-Za-z0-9]{20,}'),                '[REDACTED:api-key]'),
+    (re.compile(r'Bearer\s+[A-Za-z0-9\-._~+/]+=*',
+                re.IGNORECASE),                            '[REDACTED:bearer-token]'),
+    (re.compile(r'(password|passwd|secret|token|api[_-]?key)\s*[=:]\s*\S+',
+                re.IGNORECASE),                            '[REDACTED:credential]'),
+    (re.compile(r'-----BEGIN [A-Z ]+KEY-----[\s\S]+?-----END [A-Z ]+KEY-----'),
+                                                           '[REDACTED:private-key]'),
+    (re.compile(r'[A-Za-z0-9+/]{40,}={0,2}'),             None),  # long base64 — handled below
+]
+
+def redact(s):
+    for pattern, replacement in _REDACT_PATTERNS:
+        if replacement is not None:
+            s = pattern.sub(replacement, s)
+    return s
+
+# ── Build compact input summary (truncate + redact large values) ──────────────
 input_summary = {}
 for k, v in tool_input.items():
-    s = str(v)
+    s = redact(str(v))
     input_summary[k] = (s[:300] + "...") if len(s) > 300 else s
 
 # ── Write audit log entry ─────────────────────────────────────────────────────
@@ -150,7 +169,7 @@ if block_reason and telegram_token and telegram_chat:
     import urllib.request
     import urllib.parse
 
-    input_preview = str(tool_input)[:200]
+    input_preview = redact(str(tool_input))[:200]
     msg = (
         f"\u26a0\ufe0f WARD BLOCK\n"
         f"Rule:    {block_id}\n"
