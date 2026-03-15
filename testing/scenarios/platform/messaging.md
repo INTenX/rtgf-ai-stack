@@ -91,10 +91,10 @@ Real-world use cases this maps to:
 
 | Scenario | Status | Report |
 |----------|--------|--------|
-| 1 — Delivery within SLA | Pending | — |
-| 2 — ACK on consumption | Pending | — |
-| 3 — Silent when empty | Pending | — |
-| 4 — Concurrent write safety | Pending | — |
-| 5 — Malformed message handling | Pending | — |
-| 6 — Cross-WSL visibility | Pending | — |
-| 7 — Recipient unavailable | Pending | — |
+| 1 — Delivery within SLA | **PASS** | `reports/2026-03-14-messaging-suite-A.md` |
+| 2 — ACK on consumption | **PASS*** | MSG-001: ACK From: header unexpanded |
+| 3 — Silent when empty | **PASS** | `reports/2026-03-14-messaging-suite-A.md` |
+| 4 — Concurrent write safety | **PASS** | Same-second filenames would collide (low risk) |
+| 5 — Malformed message handling | **PASS*** | MSG-002: malformed consumed without warning |
+| 6 — Cross-WSL visibility | **PASS** | INTenXDev ↔ SensitDev confirmed |
+| 7 — Recipient unavailable | **PASS** | Safe failure, no auto-dir creation |

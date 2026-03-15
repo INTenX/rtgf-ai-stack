@@ -108,11 +108,11 @@ Real-world use cases this maps to:
 
 | Scenario | Status | Report |
 |----------|--------|--------|
-| 1 — Import well-formed | Pending | — |
-| 2 — Import missing fields | Pending | — |
-| 3 — Flow promotion regression | **FAIL** | `reports/2026-03-14-chronicle-flow-promotion-A.md` |
-| 4 — Orphan detection | Pending | — |
-| 5 — ctx-search relevance | Pending | — |
-| 6 — MCP tool coverage | Pending | — |
-| 7 — Contradiction handling | Pending | — |
-| 8 — Import skill | Pending | — |
+| 1 — Import well-formed | **PASS** | `reports/2026-03-14-chronicle-suite-A.md` |
+| 2 — Import missing fields | Pending | Needs malformed JSONL test fixture |
+| 3 — Flow promotion regression | **FAIL** | CHR-001 unpatched — `reports/2026-03-14-chronicle-suite-A.md` |
+| 4 — Orphan detection | **PASS** | 31 orphans found correctly |
+| 5 — ctx-search relevance | **PASS** | 36 results, top result relevant |
+| 6 — MCP tool coverage | **PASS** | All 4 tools registered and responding |
+| 7 — Contradiction handling | Pending | Needs conflicting session test fixtures |
+| 8 — Import skill | **PASS** | Professional, correct; minor doc gap noted |

@@ -84,9 +84,9 @@ Real-world use cases this maps to:
 
 | Scenario | Status | Report |
 |----------|--------|--------|
-| 1 — Basic routing | Pending | — |
-| 2 — Budget cap enforcement | Pending | — |
-| 3 — Ollama fallback | Pending | — |
-| 4 — Spend in PostgreSQL | Pending | — |
-| 5 — Invalid key rejected | Pending | — |
-| 6 — Key setup skill | Pending | — |
+| 1 — Basic routing | **PASS*** | Routes OK; Anthropic API key expired (GW-002) |
+| 2 — Budget cap enforcement | **FAIL** | GW-001: cap never enforced on $0 Ollama models |
+| 3 — Ollama fallback | **PASS** | llama3.2:3b routed and responded correctly |
+| 4 — Spend in PostgreSQL | **PASS** | Entries present with correct fields |
+| 5 — Invalid key rejected | **PASS** | 401 with actionable error |
+| 6 — Key setup skill | **PASS** | Correct, professional; add Ollama budget note |

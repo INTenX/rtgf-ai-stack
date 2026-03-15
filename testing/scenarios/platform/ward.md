@@ -106,11 +106,11 @@ Real-world use cases this maps to:
 
 | Scenario | Status | Report |
 |----------|--------|--------|
-| 1 — Block triggers + Telegram | Pending | — |
-| 2 — Allowed passes clean | Pending | — |
-| 3 — Audit log fields | Pending | — |
-| 4 — Credential path block | Pending | — |
-| 5 — install-hooks.sh policy update | Pending | — |
-| 6 — Hook latency | Pending | — |
-| 7 — Audit review skill | Pending | — |
-| 8 — Indirect access pattern | Pending | — |
+| 1 — Block triggers + Telegram | **PASS** | `reports/2026-03-14-ward-suite-A.md` |
+| 2 — Allowed passes clean | **PASS** | `reports/2026-03-14-ward-suite-A.md` |
+| 3 — Audit log fields | **PASS** | `reports/2026-03-14-ward-suite-A.md` |
+| 4 — Credential path block | **PASS** | `reports/2026-03-14-ward-suite-A.md` |
+| 5 — install-hooks.sh policy update | **PASS** | `reports/2026-03-14-ward-suite-A.md` |
+| 6 — Hook latency | **PASS*** | avg 143ms ✓; max 418ms noted |
+| 7 — Audit review skill | **PASS** | `reports/2026-03-14-ward-suite-A.md` |
+| 8 — Indirect access pattern | **FAIL** | WARD-001: bash path access gap |
