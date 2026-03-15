@@ -61,6 +61,7 @@ Current blocked patterns in `hooks/policy/blocked-patterns.json`:
 | SSH private key operations | CRITICAL | Block |
 | Private key file access (`.pem`, `.key`) | HIGH | Warn |
 | Environment file writes (`.env`) | HIGH | Warn |
+| Shell access to credential files (`/etc/passwd`, `~/.ssh/id_*`, `.aws/credentials`, `.pem`, `.key`) | HIGH | Warn |
 
 ## Audit Log Format
 

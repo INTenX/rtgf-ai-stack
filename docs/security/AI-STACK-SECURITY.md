@@ -1,5 +1,5 @@
 # AI Stack — Security Context
-**Living Document** | Last updated: 2026-03-06 (updated this session)
+**Living Document** | Last updated: 2026-03-14
 **Scope:** WARD hooks, platform hooks, CLI commands, skills, and the full security roadmap for the rtgf-ai-stack.
 **Cross-ref:** `~/rtgf-ai-stack/hooks/` | `~/security/AGENT_GUIDANCE.md` | `~/rtgf-ai-stack/docs/architecture/security-layers.md`
 
@@ -19,7 +19,30 @@ Update this document when any of the above changes.
 
 ---
 
-## Current Security State (as of 2026-03-06)
+## Security Audit — 2026-03-14
+
+A structured security audit was conducted on the full stack. Six shell injection vulnerabilities were found and fixed:
+
+| Finding | File | Fix |
+|---------|------|-----|
+| `AUDIT-001` | `interface/lib/tools.js` — `loreImport()` | `execSync` with string interpolation → `execFileSync` with args array |
+| `AUDIT-002` | `chronicle/tools/lib/git-operations.js` — `gitAdd()` | Same fix |
+| `AUDIT-003` | `~/.local/bin/check-mailbox` | Added path traversal guard on `From:` header before writing ACK |
+| `AUDIT-004` | `chronicle/tools/cli/rcm-flow.js` | Missing `import yaml from 'js-yaml'` (caused ReferenceError) |
+| `AUDIT-005` | `chronicle/tools/lib/git-operations.js` — `gitCommit()` | `execSync` → `execFileSync` |
+| `AUDIT-006` | `chronicle/mcp-server.js` — `addSessionNote()` | Strip leading `---` from notes to prevent frontmatter injection |
+
+Additionally:
+- **WARD-001**: Added `bash-credential-file` warn pattern to block policies (shell access to `/etc/passwd`, `~/.ssh/id_*`, `.aws/credentials`, `.pem`, `.key`, etc.)
+- **WARD-EC-001**: Pattern anchored to `(?m)^\s*` to prevent false positives on heredoc content; action set to `warn` (not block) to avoid blocking legitimate documentation of these paths
+- **CHR-001**: Fixed CHRONICLE symlink flow — after `git mv`, the canonical target (resolved via `fs.realpathSync`) is now staged alongside the symlink
+- **CHR-003**: Fixed duplicate-import detection — `platform_session_id` grep was matching against quoted YAML value but YAML stores unquoted; fixed by removing quotes from pattern
+- **MSG-001/002**: Fixed ACK heredoc variable expansion + added missing `**From:**` header warning
+- **MSG-EC-003**: Added 4-char random hex suffix to `send-message` filenames to prevent same-second collisions
+
+---
+
+## Current Security State (as of 2026-03-14)
 
 ### Layer 1 — Permissions Deny (Claude Code native)
 **Status: Active** — configured in `~/.claude/settings.json`
@@ -70,6 +93,7 @@ Intercepts every Claude Code tool call. Pre-tool-use can block; post-tool-use is
 | `kill-mass` | `kill -9 -1` / `pkill -9 -f .` |
 | `env-production` | `.env.production`, `.env.prod`, `.env.staging` |
 | `env-file` | Plain `.env` files (not `.env.example`) |
+| `bash-credential-file` | Shell commands (`cat`, `less`, `cp`, `mv`, etc.) on credential paths — `/etc/passwd`, `~/.ssh/id_*`, `.aws/credentials`, `.pem`, `.key`, `.p12` — anchored to start-of-line to avoid false positives on heredoc content |
 
 **Audit log:** `~/.claude/audit/YYYY-MM-DD.jsonl` — every tool call, pre and post.
 
@@ -250,7 +274,7 @@ Phase 6  ⬜  Leash / eBPF            KERNEL-LEVEL enforcement
 | ~~WARD Telegram alerts not wired~~ | ~~Blocks are silent on phone~~ | ✅ Fixed 2026-03-06 — token wired in `~/.claude/hooks/ward.env` |
 | ~~AI Hub WSL not bootstrapped~~ | ~~resolved~~ | ✅ Fixed 2026-03-06 — WARD hooks installed, permissions.deny added, ward.env wired |
 | `ctx/archive/raw/` not gitignored in knowledge repos | Git repo grows unbounded | Add `ctx/archive/raw/` to `.gitignore` in each knowledge repo |
-| Hypothesis session auto-prune not built | Old sessions accumulate | Build cron job to `git rm` hypothesis sessions >30 days old |
+| ~~Hypothesis session auto-prune not built~~ | ~~Old sessions accumulate~~ | ✅ Fixed 2026-03-14 — `prune-hypothesis.js` cron (weekly, 30d stale) |
 | ~~task-completed hook passthrough~~ | ~~resolved~~ | Fixed — active blocking confirmed |
 | Client WSL instances not audited | Unknown security posture | Run `claude-security-verify.sh` on each instance |
 

@@ -84,31 +84,36 @@ The `/ward` command is admin-only.
 
 ```json
 {
-  "rules": [
+  "bash_patterns": [
     {
-      "id": "no-rm-rf",
-      "pattern": "rm\\s+-rf",
-      "severity": "CRITICAL",
+      "id": "rm-rf",
+      "pattern": "rm\\s+(-\\S*r\\S*f|-rf|-fr)\\s",
       "action": "block",
       "message": "Destructive rm -rf blocked"
     },
     {
-      "id": "no-force-push-main",
-      "pattern": "git push.*--force.*(?:main|master)",
-      "severity": "CRITICAL",
+      "id": "git-force-push",
+      "pattern": "git push.*(--force|-f)(?!-with-lease).*(main|master)",
       "action": "block",
       "message": "Force push to main/master blocked"
     },
     {
-      "id": "no-hard-reset",
-      "pattern": "git reset.*--hard",
-      "severity": "CRITICAL",
+      "id": "git-reset-hard",
+      "pattern": "git reset --hard",
       "action": "block",
       "message": "Hard reset blocked"
+    },
+    {
+      "id": "bash-credential-file",
+      "pattern": "(?m)^\\s*(cat|less|head|tail|strings|cp|mv)\\s+.*(etc/(passwd|shadow|sudoers)|~?\\.ssh/id_[a-z]|\\.aws/credentials|\\.pem|\\.key|\\.p12|\\.pfx)",
+      "action": "warn",
+      "message": "Credential/key file access — verify intent"
     }
   ]
 }
 ```
+
+The `bash-credential-file` pattern is anchored to `(?m)^\s*` to avoid false positives when Claude writes documentation or heredocs that mention these paths as examples.
 
 ## Audit Log
 

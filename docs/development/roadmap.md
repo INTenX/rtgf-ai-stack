@@ -35,8 +35,9 @@ gantt
     Wrap signal detector cron      :done, p4g, 2026-03-14, 2026-03-14
     Auto-prune hypothesis cron     :done, p4h, 2026-03-14, 2026-03-14
     CI/CD cron + hook registration :done, p4i, 2026-03-14, 2026-03-14
-    Mem0 memory integration        :p4j, 2026-03-20, 2026-04-01
-    Client group chat wiring       :p4k, 2026-03-20, 2026-03-30
+    Security audit + hardening     :done, p4j, 2026-03-14, 2026-03-14
+    Mem0 memory integration        :p4k, 2026-03-20, 2026-04-01
+    Client group chat wiring       :p4l, 2026-03-20, 2026-03-30
 
     section Phase 5
     BATON session registry         :p5a, 2026-04-01, 2026-04-10
@@ -86,6 +87,7 @@ gantt
 - [x] Wrap signal detector — hourly cron, Telegram alert on compaction/age/size
 - [x] Auto-prune hypothesis sessions — weekly cron (30d stale, no curation)
 - [x] CI/CD cron registration — all crons registered idempotently on deploy
+- [x] Security audit + hardening — 6 shell injection fixes (`execFileSync` array form), `bash-credential-file` WARD pattern, path traversal guard in `check-mailbox`, frontmatter injection guard in MCP server
 - [ ] Mem0 — semantic per-user memory (replaces flat `.chat-history.json`)
 - [ ] Client group chat wiring (add team Telegram IDs to config.yaml)
 
@@ -99,7 +101,7 @@ gantt
 
 | Gap | Impact | Fix |
 |-----|--------|-----|
-| ANTHROPIC_API_KEY not set on Hub | `/claude` and `/claudefast` return error | Add to `gateway/.env`, restart gateway |
+| **GW-002** ANTHROPIC_API_KEY expired on Hub | `/claude` and `/claudefast` return auth error | Refresh key in `compose/gateway.env` on Ubuntu-AI-Hub, restart `litellm-gateway` |
 | Client group chat IDs unknown | Can't route sensit-dev traffic to their key | Add bot to group, run `/whoami`, update `config.yaml` |
 | BATON registry not built | Sessions can't discover each other | Phase 5: build registry.json + heartbeat integration |
 | Mem0 not integrated | Per-user memory is flat JSON | Phase 5: swap `.chat-history.json` for Mem0 graph |
