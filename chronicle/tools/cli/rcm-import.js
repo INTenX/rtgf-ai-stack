@@ -63,6 +63,36 @@ function ensureDir(dirPath) {
 }
 
 /**
+ * Scan canonical archive for an existing file with a matching platform_session_id.
+ * Returns the existing file path if found, or null.
+ */
+function findExistingImport(canonicalRoot, platformSessionId) {
+  if (!platformSessionId || !fs.existsSync(canonicalRoot)) return null;
+  // grep is faster than reading every file in Node
+  try {
+    const result = execSync(
+      `grep -rl "platform_session_id: '${platformSessionId}'" "${canonicalRoot}" 2>/dev/null || true`,
+      { encoding: 'utf8' }
+    ).trim();
+    return result || null;
+  } catch (_) {
+    return null;
+  }
+}
+
+/**
+ * Extract the platform_session_id from the source file without full conversion.
+ * For claude-code the ID is the JSONL filename (UUID); for others we skip pre-check.
+ */
+function extractPlatformSessionId(sourceFile, platform) {
+  if (platform === 'claude-code') {
+    return path.basename(sourceFile, '.jsonl');
+  }
+  // For chatgpt/gemini we'd need to parse JSON — skip pre-check, dedup after conversion
+  return null;
+}
+
+/**
  * Copy file to raw archive
  */
 function archiveRaw(sourceFile, platform, config) {
@@ -172,6 +202,7 @@ async function importSession(options) {
     tags = [],
     workingDirectory = '',
     autoCommit = true,
+    forceReimport = false,
   } = options;
 
   console.log('🚀 RCM Import');
@@ -188,6 +219,19 @@ async function importSession(options) {
 
   // Load config
   const config = loadConfig(target);
+
+  // Dedup check — skip if platform_session_id already exists in canonical archive
+  if (!forceReimport) {
+    const platformSessionId = extractPlatformSessionId(source, platform);
+    if (platformSessionId) {
+      const existing = findExistingImport(config.archive.canonical, platformSessionId);
+      if (existing) {
+        console.log(`⏭️  Already imported — skipping (use --force-reimport to override)`);
+        console.log(`   Existing: ${existing}`);
+        return { skipped: true, existing };
+      }
+    }
+  }
 
   // Step 1: Archive raw
   const rawPath = archiveRaw(source, platform, config);
@@ -225,6 +269,7 @@ program
   .option('--tags <tags>', 'Comma-separated tags', (val) => val.split(',').map(t => t.trim()))
   .option('--working-directory <path>', 'Working directory context')
   .option('--no-commit', 'Skip git commit')
+  .option('--force-reimport', 'Re-import even if platform_session_id already exists')
   .option('--verbose', 'Verbose output');
 
 program.parse();

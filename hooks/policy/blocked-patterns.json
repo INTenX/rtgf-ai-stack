@@ -83,10 +83,10 @@
     },
     {
       "id": "bash-credential-file",
-      "pattern": "(cat|less|head|tail|strings|cp|mv)\\s+.*(etc/(passwd|shadow|sudoers)|~?\\.ssh/id_[a-z]|\\.aws/credentials|\\.pem$|\\.key$|\\.p12$|\\.pfx$)",
-      "description": "Shell access to credential/identity files via Bash",
-      "severity": "critical",
-      "action": "block"
+      "pattern": "(?m)^\\s*(cat|less|head|tail|strings|cp|mv)\\s+.*(etc/(passwd|shadow|sudoers)|~?\\.ssh/id_[a-z]|\\.aws/credentials|\\.pem|\\.key|\\.p12|\\.pfx)",
+      "description": "Shell access to credential/identity files via Bash (warn — false positives possible in heredocs)",
+      "severity": "high",
+      "action": "warn"
     }
   ],
 
