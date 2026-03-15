@@ -71,7 +71,7 @@ function findExistingImport(canonicalRoot, platformSessionId) {
   // grep is faster than reading every file in Node
   try {
     const result = execSync(
-      `grep -rl "platform_session_id: '${platformSessionId}'" "${canonicalRoot}" 2>/dev/null || true`,
+      `grep -rl "platform_session_id: ${platformSessionId}" "${canonicalRoot}" 2>/dev/null || true`,
       { encoding: 'utf8' }
     ).trim();
     return result || null;
