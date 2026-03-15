@@ -8,7 +8,7 @@
  * Implements RCM commit conventions.
  */
 
-import { execSync } from 'child_process';
+import { execSync, execFileSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 
@@ -84,8 +84,8 @@ export function gitMove(rcmRoot, fromPath, toPath, options = {}) {
  */
 export function gitAdd(rcmRoot, files) {
   try {
-    const fileList = Array.isArray(files) ? files.join(' ') : files;
-    execSync(`git add ${fileList}`, { cwd: rcmRoot, stdio: 'inherit' });
+    const fileList = Array.isArray(files) ? files : [files];
+    execFileSync('git', ['add', ...fileList], { cwd: rcmRoot, stdio: 'inherit' });
     return { success: true };
   } catch (err) {
     throw new Error(`Git add failed: ${err.message}`);
@@ -105,7 +105,6 @@ export function gitCommit(rcmRoot, type, message, options = {}) {
   }
 
   const commitMsg = `rcm(${type}): ${message}`;
-  const cmd = `git commit -m "${commitMsg}"`;
 
   if (dryRun) {
     console.log(`[DRY RUN] Would commit: ${commitMsg}`);
@@ -113,7 +112,7 @@ export function gitCommit(rcmRoot, type, message, options = {}) {
   }
 
   try {
-    execSync(cmd, { cwd: rcmRoot, stdio: 'inherit' });
+    execFileSync('git', ['commit', '-m', commitMsg], { cwd: rcmRoot, stdio: 'inherit' });
     return { success: true, message: commitMsg };
   } catch (err) {
     // If nothing to commit, that's okay

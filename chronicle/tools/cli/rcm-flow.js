@@ -16,6 +16,7 @@ import { program } from 'commander';
 import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
+import yaml from 'js-yaml';
 import { flowTransition, isGitRepo, initGitIfNeeded } from '../lib/git-operations.js';
 
 /**

@@ -290,7 +290,9 @@ async function addSessionNote({ id, note }) {
   const raw = await fs.readFile(session.file_path, 'utf8');
   const timestamp = new Date().toISOString();
 
-  const noteBlock = `\n\n---\n**Agent note** (${timestamp}):\n${note}\n`;
+  // Strip leading --- to prevent frontmatter injection
+  const safeNote = note.replace(/^-{3,}/m, '');
+  const noteBlock = `\n\n---\n**Agent note** (${timestamp}):\n${safeNote}\n`;
   await fs.writeFile(session.file_path, raw + noteBlock, 'utf8');
 
   return {

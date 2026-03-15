@@ -1,6 +1,6 @@
 'use strict'
 
-const { execSync, spawn } = require('child_process')
+const { execSync, execFileSync, spawn } = require('child_process')
 const path = require('path')
 
 const STACK_ROOT = path.join(__dirname, '../..')
@@ -52,10 +52,10 @@ async function ollamaModels() {
 // Run CHRONICLE import for a given session file or all pending
 function loreImport(target = '') {
   try {
-    const cmd = target
-      ? `ctx-import --source ${target} --platform claude-code`
-      : 'ctx-import --auto'
-    return execSync(cmd, {
+    const args = target
+      ? ['--source', target, '--platform', 'claude-code']
+      : ['--auto']
+    return execFileSync('ctx-import', args, {
       encoding: 'utf8',
       timeout: 60000,
       cwd: path.join(STACK_ROOT, 'chronicle')
